@@ -1,3 +1,6 @@
+# This code is created by @Mhrnqaruni
+# https://github.com/Mhrnqaruni/
+
 import pygame
 import random
 import time
