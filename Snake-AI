@@ -1,0 +1,140 @@
+#This code was written by @Mhrnqaruni 
+#https://github.com/Mhrnqaruni
+
+import random
+import heapq
+
+class SnakeGameAI:
+    def __init__(self, game):
+        self.game = game
+
+    def calculate_utility(self, move):
+        new_head = self.game.get_new_head(move)
+
+        if self.game.is_crash(new_head):
+            return float('-inf')
+
+        path_length = self.game.a_star_search(new_head, self.game.food)
+        return -path_length
+
+    def get_move(self):
+        moves = ['UP', 'DOWN', 'LEFT', 'RIGHT']
+        utilities = [self.calculate_utility(move) for move in moves]
+        best_move = moves[utilities.index(max(utilities))]
+
+        return best_move
+
+class SnakeGame:
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
+        self.snake = [(width // 2, height // 2)]
+        self.food = self.generate_food()
+        self.game_over = False
+
+    def generate_food(self):
+        while True:
+            food = (random.randint(0, self.width - 1), random.randint(0, self.height - 1))
+            if food not in self.snake:
+                return food
+
+    def is_crash(self, position):
+        if (
+            position in self.snake
+            or position[0] < 0
+            or position[0] >= self.width
+            or position[1] < 0
+            or position[1] >= self.height
+        ):
+            return True
+        return False
+
+    def get_new_head(self, move):
+        x, y = self.snake[0]
+        if move == 'UP':
+            new_head = (x, y - 1)
+        elif move == 'DOWN':
+            new_head = (x, y + 1)
+        elif move == 'LEFT':
+            new_head = (x - 1, y)
+        elif move == 'RIGHT':
+            new_head = (x + 1, y)
+        return new_head
+
+    def a_star_search(self, start, goal):
+        open_list = []
+        closed_list = set()
+        g_scores = {start: 0}
+        f_scores = {start: self.manhattan_distance(start, goal)}
+        heapq.heappush(open_list, (f_scores[start], start))
+
+        while open_list:
+            _, current = heapq.heappop(open_list)
+            if current == goal:
+                return g_scores[current]
+            closed_list.add(current)
+
+            for neighbor in self.get_neighbors(current):
+                if neighbor in closed_list:
+                    continue
+
+                tentative_g_score = g_scores[current] + 1
+                if neighbor not in [item[1] for item in open_list] or tentative_g_score < g_scores[neighbor]:
+                    g_scores[neighbor] = tentative_g_score
+                    f_scores[neighbor] = g_scores[neighbor] + self.manhattan_distance(neighbor, goal)
+                    heapq.heappush(open_list, (f_scores[neighbor], neighbor))
+
+        return float('inf')
+
+    def manhattan_distance(self, point1, point2):
+        return abs(point1[0] - point2[0]) + abs(point1[1] - point2[1])
+
+    def get_neighbors(self, position):
+        x, y = position
+        neighbors = [(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)]
+        return [(x, y) for x, y in neighbors if 0 <= x < self.width and 0 <= y < self.height and (x, y) not in self.snake]
+
+    def make_move(self, move):
+        if self.game_over:
+            return
+
+        new_head = self.get_new_head(move)
+
+        if self.is_crash(new_head):
+            self.game_over = True
+            return
+
+        self.snake.insert(0, new_head)
+
+        if new_head == self.food:
+            self.food = self.generate_food()
+        else:
+            self.snake.pop()
+
+    def display(self):
+        for y in range(self.height):
+            for x in range(self.width):
+                if (x, y) == self.snake[0]:
+                    print('P', end=' ')
+                elif (x, y) in self.snake[1:]:
+                    print('O', end=' ')
+                elif (x, y) == self.food:
+                    print('F', end=' ')
+                else:
+                    print('.', end=' ')
+            print()
+
+def play_snake_game(width, height):
+    game = SnakeGame(width, height)
+    ai = SnakeGameAI(game)
+
+    while not game.game_over:
+        game.display()
+        move = ai.get_move()
+        game.make_move(move)
+        print("====================")
+
+    print("Game Over")
+
+if __name__ == "__main__":
+    play_snake_game(width=10, height=10)
