@@ -25,9 +25,9 @@ def calculateBk(k):
 fourier_series = calculateAk(0)/2
 # sum of the functions (using cos and sin)
 for k in range(period+1):
-    fourier_series += calculateAk(k+1)*sp.cos(k*x)
-    fourier_series += calculateBk(k+1)*sp.sin(k*x)
+    fourier_series += calculateAk(k+1)*sp.cos((k+1)*x)
+    fourier_series += calculateBk(k+1)*sp.sin((k+1)*x)
 
 # Plot the graph of f(x)
-sp.plot(-fourier_series, (x, -sp.pi, sp.pi), title='Fourier Series of f(x)', xlabel='x', ylabel='f(x)')
+sp.plot(fourier_series, (x, -sp.pi, sp.pi), title='Fourier Series of f(x)', xlabel='x', ylabel='f(x)')
 sp.plot(f, (x, -sp.pi, sp.pi), title='Real f(x)', xlabel='x', ylabel='f(x)')
